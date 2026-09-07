@@ -65,7 +65,7 @@ Tarefa criarTarefa() throws TarefaInvalidaException {
     String nome = IO.readln("Nome da tarefa: ");
 
     // THROW: a gente MESMO dispara a excecao quando a regra do negocio e quebrada
-    if (nome == null || nome.isBlank()) {
+    if (nome.isBlank()) {
         throw new TarefaInvalidaException("o nome não pode ficar vazio.");
     }
 
@@ -80,11 +80,7 @@ Tarefa criarTarefa() throws TarefaInvalidaException {
         throw new TarefaInvalidaException("a prioridade tem que estar entre 1 e 5.");
     }
 
-    // AO VIVO a gente para aqui: devolve sempre uma TarefaSimples.
-    // Deixar o usuario ESCOLHER o tipo (e poder criar uma TarefaComPrazo
-    // pelo menu, que ai notifica) e o EXTRA do desafio.
-    // Por enquanto, a TarefaComPrazo do exemplo la em cima e quem mostra
-    // o notificar() funcionando na opcao 2.
+
     return new TarefaSimples(nome, "sem descrição", prioridade,
             "Lander", 2, TarefaStatus.PENDENTE);
 }
@@ -95,7 +91,7 @@ void listar(List<Tarefa> tarefas) {
         return;
     }
 
-    // forEach + LAMBDA: "para cada t, faca..."
+
     tarefas.forEach(t -> {
         t.resumo();
 
