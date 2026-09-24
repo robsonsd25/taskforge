@@ -40,7 +40,7 @@ public class TarefaController {
     }
 
     @PutMapping("/tarefas/{id}")
-    public ResponseEntity<? extends Object> atualizarTarefa(@PathVariable Long id, @RequestBody TarefaDTO tarefaDTO) {
+    public ResponseEntity<TarefaDTO> atualizarTarefa(@PathVariable Long id, @RequestBody TarefaDTO tarefaDTO) {
         Optional<TarefaDTO> tarefaAtualizada = tarefaService.atualizarTarefa(id, tarefaDTO);
         if (tarefaAtualizada.isPresent()) {
             return ResponseEntity.ok(tarefaAtualizada.get());
@@ -49,4 +49,13 @@ public class TarefaController {
         }
     }
 
+    @DeleteMapping("/tarefas/{id}")
+    public ResponseEntity<Void> deletarTarefa(@PathVariable Long id) {
+        Optional<TarefaDTO> tarefaDeletada = tarefaService.deleteTarefa(id);
+        if (tarefaDeletada.isPresent()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

@@ -55,4 +55,13 @@ public class TarefaService {
         }
         return Optional.empty();
     }
+
+    public Optional<TarefaDTO> deleteTarefa(Long id) {
+        Optional<Tarefa> tarefaRecuperada = tarefaRepository.findById(id);
+        if (tarefaRecuperada.isPresent()) {
+            tarefaRepository.delete(tarefaRecuperada.get());
+            return Optional.of(toDto(tarefaRecuperada.get()));
+        }
+        return Optional.empty();
+    }
 }
