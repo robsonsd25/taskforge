@@ -4,12 +4,10 @@ import br.com.docodigoaocontrato.taskforge.dto.TarefaDTO;
 import br.com.docodigoaocontrato.taskforge.service.TarefaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class TarefaController {
@@ -25,9 +23,30 @@ public class TarefaController {
         return tarefaService.buscarTodos();
     }
 
+    @GetMapping("/tarefas/{id}")
+    public ResponseEntity<TarefaDTO> buscarPorId(@PathVariable Long id) {
+        TarefaDTO tarefaDTO = tarefaService.buscarPorId(id);
+        if (tarefaDTO != null) {
+            return ResponseEntity.ok(tarefaDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping("/tarefas")
     public ResponseEntity<TarefaDTO> criarTarefa(@RequestBody TarefaDTO tarefaDTO) {
         TarefaDTO tarefaCriada = tarefaService.criarTarefa(tarefaDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(tarefaCriada);
     }
+
+    @PutMapping("/tarefas/{id}")
+    public ResponseEntity<? extends Object> atualizarTarefa(@PathVariable Long id, @RequestBody TarefaDTO tarefaDTO) {
+        Optional<TarefaDTO> tarefaAtualizada = tarefaService.atualizarTarefa(id, tarefaDTO);
+        if (tarefaAtualizada.isPresent()) {
+            return ResponseEntity.ok(tarefaAtualizada.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
