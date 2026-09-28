@@ -56,12 +56,15 @@ public class TarefaService {
         return Optional.empty();
     }
 
-    public Optional<TarefaDTO> deleteTarefa(Long id) {
-        Optional<Tarefa> tarefaRecuperada = tarefaRepository.findById(id);
-        if (tarefaRecuperada.isPresent()) {
-            tarefaRepository.delete(tarefaRecuperada.get());
-            return Optional.of(toDto(tarefaRecuperada.get()));
+    public boolean deleteTarefa(Long id) {
+        if (!tarefaRepository.existsById(id)) {
+            return false;
         }
-        return Optional.empty();
+        tarefaRepository.deleteById(id);
+        return true;
+    }
+
+    public TarefaDTO buscarPorId(String prioridade) {
+        return null;
     }
 }

@@ -19,7 +19,6 @@ public class Tarefa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nome;
     private int prioridade;
     private boolean concluida;

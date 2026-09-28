@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,11 +52,20 @@ public class TarefaController {
 
     @DeleteMapping("/tarefas/{id}")
     public ResponseEntity<Void> deletarTarefa(@PathVariable Long id) {
-        Optional<TarefaDTO> tarefaDeletada = tarefaService.deleteTarefa(id);
-        if (tarefaDeletada.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        boolean deletado = tarefaService.deleteTarefa(id);
+        if (deletado) {
+            return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/tarefas/prioridade")
+        public ResponseEntity<List<TarefaDTO>> buscarTarefasPorPrioridade(@RequestParam String prioridade) {
+        List<TarefaDTO> tarefas = Collections.singletonList(tarefaService.buscarPorId(prioridade));
+        return ResponseEntity.ok(tarefas);
+    }
+
 }
+
+
