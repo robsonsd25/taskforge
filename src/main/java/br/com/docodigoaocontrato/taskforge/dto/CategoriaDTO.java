@@ -9,10 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ComentarioDTO {
+public class CategoriaDTO {
 
     private Long id;
-    private String descricao;
-    private Long usuarioId;
-    private Long tarefaId;
+    private String nome;
 }

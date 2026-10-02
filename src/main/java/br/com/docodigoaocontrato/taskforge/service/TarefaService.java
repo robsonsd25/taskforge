@@ -1,70 +1,97 @@
 package br.com.docodigoaocontrato.taskforge.service;
 
 import br.com.docodigoaocontrato.taskforge.dto.TarefaDTO;
+import br.com.docodigoaocontrato.taskforge.model.Categoria;
 import br.com.docodigoaocontrato.taskforge.model.Tarefa;
+import br.com.docodigoaocontrato.taskforge.model.Usuario;
+import br.com.docodigoaocontrato.taskforge.repository.CategoriaRepository;
 import br.com.docodigoaocontrato.taskforge.repository.TarefaRepository;
+import br.com.docodigoaocontrato.taskforge.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TarefaService {
 
     private final TarefaRepository tarefaRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public TarefaService(TarefaRepository tarefaRepository) {
+    public TarefaService(
+            TarefaRepository tarefaRepository,
+            CategoriaRepository categoriaRepository,
+            UsuarioRepository usuarioRepository) {
+
         this.tarefaRepository = tarefaRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public List<TarefaDTO> buscarTodos() {
+    public List<TarefaDTO> listarTodos() {
         return tarefaRepository.findAll()
                 .stream()
-                .map(tarefa -> toDto(tarefa))
+                .map(this::mapToDTO)
                 .toList();
     }
 
-    public TarefaDTO criarTarefa(TarefaDTO tarefaDTO) {
-        Tarefa tarefa = toEntity(tarefaDTO);
-        return toDto(tarefaRepository.save(tarefa));
+    public TarefaDTO criar(TarefaDTO tarefaDTO) {
+
+        Categoria categoria = categoriaRepository.findById(tarefaDTO.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+
+        Usuario usuario = usuarioRepository.findById(tarefaDTO.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Tarefa tarefa = new Tarefa();
+
+        tarefa.setTitulo(tarefaDTO.getTitulo());
+        tarefa.setDescricao(tarefaDTO.getDescricao());
+        tarefa.setCategoria(categoria);
+        tarefa.setUsuario(usuario);
+
+        Tarefa tarefaSalva = tarefaRepository.save(tarefa);
+
+        return mapToDTO(tarefaSalva);
     }
 
-    private TarefaDTO toDto(Tarefa tarefa) {
-        return new TarefaDTO(Math.toIntExact(tarefa.getId()), tarefa.getNome(),
-                tarefa.getPrioridade(), tarefa.isConcluida());
+    public TarefaDTO atualizar(Long id, TarefaDTO tarefaDTO) {
+
+        Tarefa tarefa = tarefaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+
+        Categoria categoria = categoriaRepository.findById(tarefaDTO.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
+
+        Usuario usuario = usuarioRepository.findById(tarefaDTO.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        tarefa.setTitulo(tarefaDTO.getTitulo());
+        tarefa.setDescricao(tarefaDTO.getDescricao());
+        tarefa.setCategoria(categoria);
+        tarefa.setUsuario(usuario);
+
+        Tarefa tarefaAtualizada = tarefaRepository.save(tarefa);
+
+        return mapToDTO(tarefaAtualizada);
     }
 
-    private Tarefa toEntity(TarefaDTO tarefaDTO) {
-        return new Tarefa(tarefaDTO.getNome(),
-                tarefaDTO.getPrioridade(), tarefaDTO.isConcluida());
+    public void deletar(Long id) {
+
+        Tarefa tarefa = tarefaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+
+        tarefaRepository.delete(tarefa);
     }
 
-    public TarefaDTO buscarPorId(Long id) {
-        Optional<Tarefa> tarefaOptional = tarefaRepository.findById(id);
-        return tarefaOptional.map(this::toDto).orElse(null);
-    }
+    private TarefaDTO mapToDTO(Tarefa tarefa) {
 
-    public Optional<TarefaDTO> atualizarTarefa(Long id, TarefaDTO tarefaDTO) {
-        Optional<Tarefa> tarefaRecuperada = tarefaRepository.findById(id);
-        if (tarefaRecuperada.isPresent()) {
-            Tarefa tarefa = tarefaRecuperada.get();
-            tarefa.setNome(tarefaDTO.getNome());
-            tarefa.setPrioridade(tarefaDTO.getPrioridade());
-            tarefa.setConcluida(tarefaDTO.isConcluida());
-            return Optional.of(toDto(tarefaRepository.save(tarefa)));
-        }
-        return Optional.empty();
-    }
-
-    public boolean deleteTarefa(Long id) {
-        if (!tarefaRepository.existsById(id)) {
-            return false;
-        }
-        tarefaRepository.deleteById(id);
-        return true;
-    }
-
-    public TarefaDTO buscarPorId(String prioridade) {
-        return null;
+        return new TarefaDTO(
+                tarefa.getId(),
+                tarefa.getTitulo(),
+                tarefa.getDescricao(),
+                tarefa.getCategoria().getId(),
+                tarefa.getUsuario().getId()
+        );
     }
 }
