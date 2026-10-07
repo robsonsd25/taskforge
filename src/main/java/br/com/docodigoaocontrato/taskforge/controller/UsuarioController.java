@@ -1,11 +1,14 @@
 package br.com.docodigoaocontrato.taskforge.controller;
 
+import br.com.docodigoaocontrato.taskforge.dto.UsuarioCadastroDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioDTO;
 import br.com.docodigoaocontrato.taskforge.service.UsuarioService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -19,27 +22,30 @@ public class UsuarioController {
 
     @GetMapping
     public List<UsuarioDTO> listar() {
-        return usuarioService.listarTodos();
+        return usuarioService.listar();
     }
 
     @PostMapping
-    public UsuarioDTO criar(@RequestBody UsuarioDTO usuarioDTO) {
-        return usuarioService.criar(usuarioDTO);
+    public ResponseEntity<UsuarioDTO> cadastrar(@RequestBody UsuarioCadastroDTO dto) {
+
+        Optional<UsuarioDTO> criado = usuarioService.cadastrar(dto);
+
+        if (criado.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(criado.get());
     }
 
-    @PutMapping("/{id}")
-    public UsuarioDTO atualizar(
-            @PathVariable Long id,
-            @RequestBody UsuarioDTO usuarioDTO) {
+    @PutMapping("/{id}/desativar")
+    public ResponseEntity<UsuarioDTO> desativar(@PathVariable Long id) {
 
-        return usuarioService.atualizar(id, usuarioDTO);
-    }
+        Optional<UsuarioDTO> desativado = usuarioService.desativar(id);
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deletar(@PathVariable Long id) {
+        if (desativado.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
 
-        usuarioService.deletar(id);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(desativado.get());
     }
 }

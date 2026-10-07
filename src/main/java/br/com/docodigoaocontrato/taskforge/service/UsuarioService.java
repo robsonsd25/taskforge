@@ -1,67 +1,67 @@
 package br.com.docodigoaocontrato.taskforge.service;
 
+import br.com.docodigoaocontrato.taskforge.dto.UsuarioCadastroDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioDTO;
 import br.com.docodigoaocontrato.taskforge.model.Usuario;
 import br.com.docodigoaocontrato.taskforge.repository.UsuarioRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public List<UsuarioDTO> listarTodos() {
+    public Optional<UsuarioDTO> cadastrar(UsuarioCadastroDTO dto) {
+
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
+            return Optional.empty();
+        }
+
+        String senhaEmbaralhada = encoder.encode(dto.getSenha());
+        Usuario usuario = new Usuario(dto.getNome(), dto.getEmail(), senhaEmbaralhada);
+        Usuario salvo = usuarioRepository.save(usuario);
+
+        return Optional.of(toDto(salvo));
+    }
+
+    public List<UsuarioDTO> listar() {
         return usuarioRepository.findAll()
                 .stream()
-                .map(this::mapToDTO)
+                .map(this::toDto)
                 .toList();
     }
 
-    public UsuarioDTO criar(UsuarioDTO usuarioDTO) {
+    public Optional<UsuarioDTO> desativar(Long id) {
 
-        Usuario usuario = new Usuario();
+        Optional<Usuario> encontrado = usuarioRepository.findById(id);
 
-        usuario.setNome(usuarioDTO.getNome());
-        usuario.setEmail(usuarioDTO.getEmail());
+        if (encontrado.isEmpty()) {
+            return Optional.empty();
+        }
 
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+        Usuario usuario = encontrado.get();
+        usuario.setAtivo(false);
+        Usuario salvo = usuarioRepository.save(usuario);
 
-        return mapToDTO(usuarioSalvo);
+        return Optional.of(toDto(salvo));
     }
 
-    public UsuarioDTO atualizar(Long id, UsuarioDTO usuarioDTO) {
-
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        usuario.setNome(usuarioDTO.getNome());
-        usuario.setEmail(usuarioDTO.getEmail());
-
-        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-
-        return mapToDTO(usuarioAtualizado);
-    }
-
-    public void deletar(Long id) {
-
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        usuarioRepository.delete(usuario);
-    }
-
-    private UsuarioDTO mapToDTO(Usuario usuario) {
-
+    private UsuarioDTO toDto(Usuario usuario) {
         return new UsuarioDTO(
                 usuario.getId(),
                 usuario.getNome(),
-                usuario.getEmail()
+                usuario.getEmail(),
+                usuario.getAtivo()
         );
     }
 }
