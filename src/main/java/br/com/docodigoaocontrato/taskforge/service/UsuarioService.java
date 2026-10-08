@@ -1,10 +1,12 @@
 package br.com.docodigoaocontrato.taskforge.service;
 
 import br.com.docodigoaocontrato.taskforge.dto.LoginDTO;
+import br.com.docodigoaocontrato.taskforge.dto.LoginRespostaDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioCadastroDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioDTO;
 import br.com.docodigoaocontrato.taskforge.model.Usuario;
 import br.com.docodigoaocontrato.taskforge.repository.UsuarioRepository;
+import br.com.docodigoaocontrato.taskforge.security.JwtService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+    private final JwtService jwtService = new JwtService();
 
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
@@ -57,16 +61,7 @@ public class UsuarioService {
         return Optional.of(toDto(salvo));
     }
 
-    private UsuarioDTO toDto(Usuario usuario) {
-        return new UsuarioDTO(
-                usuario.getId(),
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getAtivo()
-        );
-    }
-
-    public Optional<Usuario> login(LoginDTO dto) {
+    public Optional<LoginRespostaDTO> login(LoginDTO dto) {
 
         Optional<Usuario> encontrado = usuarioRepository.findByEmail(dto.getEmail());
 
@@ -80,6 +75,17 @@ public class UsuarioService {
             return Optional.empty();
         }
 
-        return Optional.of(usuario);
+        String token = jwtService.gerarToken(usuario.getEmail(), usuario.getNome());
+
+        return Optional.of(new LoginRespostaDTO(token, usuario.getNome()));
+    }
+
+    private UsuarioDTO toDto(Usuario usuario) {
+        return new UsuarioDTO(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getEmail(),
+                usuario.getAtivo()
+        );
     }
 }

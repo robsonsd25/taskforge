@@ -2,7 +2,6 @@ package br.com.docodigoaocontrato.taskforge.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -12,33 +11,24 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private static final String SEGREDO = "do-codigo-ao-contrato-secret-32chars";
+    private static final Long EXPIRACAO = 1000L * 60 * 60;
 
-    @Value("${jwt.expiracao}")
-    private Long expiracao;
+    private final SecretKey chave = Keys.hmacShaKeyFor(SEGREDO.getBytes(StandardCharsets.UTF_8));
 
-    private SecretKey chave;
-
-    private SecretKey getKey() {
-        if (chave == null) {
-            chave = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        }
-        return chave;
-    }
-
-    public String gerarToken(String email) {
+    public String gerarToken(String email, String nome) {
         return Jwts.builder()
                 .subject(email)
+                .claim("nome", nome)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiracao))
-                .signWith(getKey())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRACAO))
+                .signWith(chave)
                 .compact();
     }
 
     public String extrairEmail(String token) {
         return Jwts.parser()
-                .verifyWith(getKey())
+                .verifyWith(chave)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -48,7 +38,7 @@ public class JwtService {
     public boolean tokenValido(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(getKey())
+                    .verifyWith(chave)
                     .build()
                     .parseSignedClaims(token);
             return true;
