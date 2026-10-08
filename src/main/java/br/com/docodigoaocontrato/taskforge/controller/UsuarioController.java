@@ -31,7 +31,7 @@ public class UsuarioController {
         Optional<UsuarioDTO> criado = usuarioService.cadastrar(dto);
 
         if (criado.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(criado.get());
