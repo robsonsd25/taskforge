@@ -1,5 +1,6 @@
 package br.com.docodigoaocontrato.taskforge.service;
 
+import br.com.docodigoaocontrato.taskforge.dto.LoginDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioCadastroDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioDTO;
 import br.com.docodigoaocontrato.taskforge.model.Usuario;
@@ -63,5 +64,22 @@ public class UsuarioService {
                 usuario.getEmail(),
                 usuario.getAtivo()
         );
+    }
+
+    public Optional<Usuario> login(LoginDTO dto) {
+
+        Optional<Usuario> encontrado = usuarioRepository.findByEmail(dto.getEmail());
+
+        if (encontrado.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Usuario usuario = encontrado.get();
+
+        if (!encoder.matches(dto.getSenha(), usuario.getSenha())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(usuario);
     }
 }
