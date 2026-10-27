@@ -1,38 +1,31 @@
 package br.com.docodigoaocontrato.taskforge.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
+@Table(name = "tarefa")
 public class Tarefa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String titulo;
+    private String nome;
 
-    private String descricao;
+    private Integer prioridade;
 
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
-    private Categoria categoria;
+    private Boolean concluida;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
+    public Tarefa(String nome, Integer prioridade) {
+        this.nome = nome;
+        this.prioridade = prioridade;
+        this.concluida = false;
+    }
 
-    public Tarefa(String titulo, String descricao, Categoria categoria, Usuario usuario) {
-        this.titulo = titulo;
-        this.descricao = descricao;
-        this.categoria = categoria;
-        this.usuario = usuario;
+    public Tarefa() {
     }
 }

@@ -26,13 +26,17 @@ public class JwtService {
                 .compact();
     }
 
-    public String extrairEmail(String token) {
+    public String getEmailFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(chave)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public String extrairEmail(String token) {
+        return getEmailFromToken(token);
     }
 
     public boolean tokenValido(String token) {

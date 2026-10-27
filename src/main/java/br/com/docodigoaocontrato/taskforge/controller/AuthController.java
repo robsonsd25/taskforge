@@ -3,6 +3,7 @@ package br.com.docodigoaocontrato.taskforge.controller;
 import br.com.docodigoaocontrato.taskforge.dto.LoginDTO;
 import br.com.docodigoaocontrato.taskforge.dto.LoginRespostaDTO;
 import br.com.docodigoaocontrato.taskforge.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,8 @@ public class AuthController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginRespostaDTO> login(@RequestBody LoginDTO dto) {
+    @PostMapping({"/login", "/usuarios/login"})
+    public ResponseEntity<LoginRespostaDTO> login(@Valid @RequestBody LoginDTO dto) {
 
         Optional<LoginRespostaDTO> resposta = usuarioService.login(dto);
 
