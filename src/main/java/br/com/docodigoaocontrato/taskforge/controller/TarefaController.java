@@ -2,10 +2,13 @@ package br.com.docodigoaocontrato.taskforge.controller;
 
 import br.com.docodigoaocontrato.taskforge.dto.TarefaDTO;
 import br.com.docodigoaocontrato.taskforge.service.TarefaService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/tarefas")
@@ -19,27 +22,41 @@ public class TarefaController {
 
     @GetMapping
     public List<TarefaDTO> listar() {
-        return tarefaService.listarTodos();
+        return tarefaService.listar();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TarefaDTO> buscar(@PathVariable Long id) {
+        Optional<TarefaDTO> dto = tarefaService.buscarPorId(id);
+
+        if (dto.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(dto.get());
     }
 
     @PostMapping
-    public TarefaDTO criar(@RequestBody TarefaDTO tarefaDTO) {
-        return tarefaService.criar(tarefaDTO);
+    @ResponseStatus(HttpStatus.CREATED)
+    public TarefaDTO cadastrar(@Valid @RequestBody TarefaDTO dto) {
+        return tarefaService.cadastrar(dto);
     }
 
     @PutMapping("/{id}")
-    public TarefaDTO atualizar(
-            @PathVariable Long id,
-            @RequestBody TarefaDTO tarefaDTO) {
+    public ResponseEntity<TarefaDTO> atualizar(@PathVariable Long id,
+                                               @Valid @RequestBody TarefaDTO dto) {
+        Optional<TarefaDTO> atualizada = tarefaService.atualizar(id, dto);
 
-        return tarefaService.atualizar(id, tarefaDTO);
+        if (atualizada.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(atualizada.get());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deletar(@PathVariable Long id) {
-
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletar(@PathVariable Long id) {
         tarefaService.deletar(id);
-
-        return ResponseEntity.ok().build();
     }
 }

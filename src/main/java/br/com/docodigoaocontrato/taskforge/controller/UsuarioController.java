@@ -3,6 +3,7 @@ package br.com.docodigoaocontrato.taskforge.controller;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioCadastroDTO;
 import br.com.docodigoaocontrato.taskforge.dto.UsuarioDTO;
 import br.com.docodigoaocontrato.taskforge.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioDTO> cadastrar(@RequestBody UsuarioCadastroDTO dto) {
+    public ResponseEntity<UsuarioDTO> cadastrar(@Valid @RequestBody UsuarioCadastroDTO dto) {
 
         Optional<UsuarioDTO> criado = usuarioService.cadastrar(dto);
 
