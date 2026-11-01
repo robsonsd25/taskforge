@@ -2,6 +2,7 @@ package br.com.docodigoaocontrato.taskforge.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -11,17 +12,24 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SEGREDO = "do-codigo-ao-contrato-secret-32chars";
-    private static final Long EXPIRACAO = 1000L * 60 * 60;
+    private final String segredo;
+    private final Long expiracao;
+    private final SecretKey chave;
 
-    private final SecretKey chave = Keys.hmacShaKeyFor(SEGREDO.getBytes(StandardCharsets.UTF_8));
+    public JwtService(
+            @Value("${JWT_SECRET:do-codigo-ao-contrato-secret-32chars}") String segredo,
+            @Value("${jwt.expiracao:3600000}") Long expiracao) {
+        this.segredo = segredo;
+        this.expiracao = expiracao;
+        this.chave = Keys.hmacShaKeyFor(segredo.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String gerarToken(String email, String nome) {
         return Jwts.builder()
                 .subject(email)
                 .claim("nome", nome)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRACAO))
+                .expiration(new Date(System.currentTimeMillis() + expiracao))
                 .signWith(chave)
                 .compact();
     }

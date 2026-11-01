@@ -17,13 +17,13 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-
+    private final JwtService jwtService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    private final JwtService jwtService = new JwtService();
-
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    // MUDANÇA AQUI: O JwtService agora é injetado via construtor, e não criado com "new"
+    public UsuarioService(UsuarioRepository usuarioRepository, JwtService jwtService) {
         this.usuarioRepository = usuarioRepository;
+        this.jwtService = jwtService;
     }
 
     public Optional<UsuarioDTO> cadastrar(UsuarioCadastroDTO dto) {
@@ -75,6 +75,7 @@ public class UsuarioService {
             return Optional.empty();
         }
 
+        // Agora o jwtService está funcionando e injetado corretamente
         String token = jwtService.gerarToken(usuario.getEmail(), usuario.getNome());
 
         return Optional.of(new LoginRespostaDTO(token, usuario.getNome()));
