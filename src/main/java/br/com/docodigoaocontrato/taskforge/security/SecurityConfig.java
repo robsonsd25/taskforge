@@ -34,38 +34,23 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // ESSENCIAL: Ativa o CORS usando o bean configurado abaixo
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // Desativa CSRF (padrão para APIs REST com JWT)
                 .csrf(csrf -> csrf.disable())
-
-                // Configura os frames do H2 Console
-                .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin())
-                )
-
-                // API Stateless (não guarda sessão)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Regras de autorização das rotas
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login", "/usuarios", "/usuarios/login").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        // Libera o Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
-
-                // Tratamento de erro 401 personalizado
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) ->
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Não autenticado"))
                 )
-
-                // Filtro do JWT antes do filtro padrão do Spring
                 .addFilterBefore(jwtFiltro, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -75,15 +60,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Divide a string por vírgula (para permitir múltiplas origens) e limpa os espaços
         List<String> origensPermitidas = Arrays.stream(corsOrigins.split(","))
                 .map(String::trim)
                 .toList();
 
-        config.setAllowedOrigins(origensPermitidas);
+        // Usar AllowedOriginPatterns permite o uso de "*" mesmo com Credentials
+        config.setAllowedOriginPatterns(origensPermitidas);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setAllowCredentials(true); // Mantenha true se for usar cookies, senão pode ser false
+        // Como usamos JWT via header, não precisamos de cookies. Deixar false evita erros de CORS.
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
