@@ -31,7 +31,7 @@
 	</properties>
 	<dependencies>
 
-		<!-- Documentação (Swagger) - Versão para Spring Boot 4 -->
+		<!-- Documentação (Swagger) - APENAS UMA VEZ -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
