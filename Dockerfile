@@ -6,6 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
+# A MÁGICA ESTÁ AQUI: usamos o 'mvn' global em vez do './mvnw'
 RUN mvn clean package -DskipTests
 
 # Etapa 2: executar a aplicação
